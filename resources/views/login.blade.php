@@ -28,7 +28,7 @@
         </a>
 
         <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 border border-slate-100 z-10">
-            <div class="text-center mb-10">
+            <div class="text-center mb-8">
                 <div
                     class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,33 +41,57 @@
                 <p class="text-slate-500 mt-2 text-sm">Masuk ke sistem manajemen apotek Anda</p>
             </div>
 
-            <div class="space-y-6">
-                <div>
+            @if(session('success'))
+                <div class="mb-5 p-4 rounded-xl bg-emerald-50 text-emerald-600 text-sm border border-emerald-200">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if($errors->any())
+                <div class="mb-5 p-4 rounded-xl bg-rose-50 text-rose-600 text-sm border border-rose-200">
+                    <ul class="list-disc pl-5">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('login') }}" class="space-y-6">
+                @csrf <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
-                    <input type="email" value="admin@apotek.com"
+                    <input type="email" name="email" value="{{ old('email') }}" required
                         class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none"
                         placeholder="admin@apotek.com">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Password</label>
-                    <input type="password" value="password"
+                    <input type="password" name="password" required
                         class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all outline-none"
                         placeholder="••••••••">
                 </div>
                 <div class="flex items-center justify-between">
                     <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" checked
+                        <input type="checkbox" name="remember"
                             class="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500">
                         <span class="text-sm text-slate-600">Ingat Saya</span>
                     </label>
                     <a href="#" class="text-sm font-medium text-emerald-600 hover:text-emerald-700">Lupa Password?</a>
                 </div>
 
-                <a href="/dashboard"
+                <button type="submit"
                     class="block text-center w-full py-3.5 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition shadow-lg shadow-emerald-200 hover:-translate-y-0.5">
                     Masuk ke Dashboard
-                </a>
+                </button>
+            </form>
+
+            <div class="mt-8 text-center border-t border-slate-100 pt-6">
+                <p class="text-slate-500 text-sm">
+                    Belum memiliki akun?
+                    <a href="/register" class="text-emerald-600 font-bold hover:text-emerald-700 transition ml-1">Daftar sekarang</a>
+                </p>
             </div>
+
         </div>
 
         <div

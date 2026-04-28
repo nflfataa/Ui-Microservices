@@ -20,7 +20,9 @@
             <a href="#fitur" class="hover:text-emerald-600 transition">Fitur</a>
             <a href="#tentang" class="hover:text-emerald-600 transition">Tentang</a>
         </div>
-        <a href="/login" class="px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition shadow-lg shadow-emerald-200">Login Admin</a>
+            <a href="/login" class="px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition shadow-lg shadow-emerald-200">Login</a>
+            <a href="/register" class="px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition shadow-lg shadow-emerald-200">Register</a>
+    </nav>
     </nav>
 
     <section class="container mx-auto px-6 py-20 flex flex-col md:flex-row items-center gap-12 relative">
