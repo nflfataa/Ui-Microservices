@@ -70,7 +70,7 @@ class TransactionController extends Controller
                 return back();
             }
         } catch (\Exception $e) {
-            session()->flash('warning', 'Layanan Order Service sedang bermasalah.');
+            session()->flash('warning', 'Layanan Order sedang bermasalah.');
             return back();
         }
     }
