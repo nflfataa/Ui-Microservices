@@ -14,7 +14,7 @@
     </style>
 </head>
 
-<body class="bg-gradient-to-br from-slate-50 to-emerald-50 antialiased selection:bg-emerald-500 selection:text-white">
+<body class="bg-gradient-to-br from-slate-50 to-emerald-50 antialiased selection:bg-emerald-500 selection:text-white overflow-x-hidden">
 
     <div class="min-h-screen flex flex-col items-center justify-center px-4 py-12 relative">
 

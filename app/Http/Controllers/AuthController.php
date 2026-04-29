@@ -29,6 +29,25 @@ class AuthController extends Controller
     return redirect('/login')->withErrors(['login_error' => 'Token tidak valid.']);
 }
 
+    // Logout function
+    public function logout(Request $request)
+    {
+        $token = session('api_token');
+        
+        try {
+            // Call Flask Logout
+            Http::withToken($token)->post('http://127.0.0.1:5000/logout');
+        } catch (\Exception $e) {
+            // Silence error if flask is down
+        }
+
+        // Clear Laravel Session
+        session()->forget(['api_token', 'user_id', 'user_name', 'user_role']);
+        session()->flush();
+
+        return redirect('/login')->with('success', 'Anda telah berhasil keluar.');
+    }
+
     public function register(Request $request)
     {
         // 1. Validasi input dari form UI Blade
@@ -91,11 +110,11 @@ class AuthController extends Controller
             $data = $response->json()['data'];
             
             // 2. Simpan token ke dalam Session Laravel
-            // Asumsi Flask mengembalikan token dengan key 'access_token' atau 'token'
             $token = $data['access_token'];
             session(['api_token' => $token]);
             
-            // (Opsional) Simpan data user lainnya jika perlu
+            // Simpan data user lainnya
+            session(['user_id' => $data['user']['id'] ?? null]);
             session(['user_name' => $data['user']['name'] ?? 'Admin']);
             session(['user_role' => $data['user']['role'] ?? 'user']);
 

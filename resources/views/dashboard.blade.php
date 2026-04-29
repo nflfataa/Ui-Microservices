@@ -14,7 +14,7 @@
                         <p class="text-emerald-100 font-medium mb-1">
                             {{ \Carbon\Carbon::now()->locale('id')->isoFormat('dddd, D MMMM Y') }}
                         </p>
-                        <h1 class="text-3xl font-bold mb-2">Selamat Bertugas, {{ auth()->user()->name ?? 'Dwiky Rahman' }}!
+                        <h1 class="text-3xl font-bold mb-2">Selamat Bertugas, {{ session('user_name') ?? 'Admin' }}!
                             👋</h1>
                         <p class="text-emerald-50 opacity-90">Sistem apotek siap digunakan. Kelola data obat dan transaksi
                             hari ini.</p>
@@ -35,7 +35,7 @@
                     </div>
                     <div>
                         <p class="text-sm text-slate-500 font-medium">Total Jenis Obat</p>
-                        <h3 class="text-2xl font-bold text-slate-800 mt-0.5">1.245</h3>
+                        <h3 class="text-2xl font-bold text-slate-800 mt-0.5">{{ $totalObat }}</h3>
                     </div>
                 </div>
 
@@ -48,8 +48,10 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="text-sm text-slate-500 font-medium">Transaksi Hari Ini</p>
-                        <h3 class="text-2xl font-bold text-slate-800 mt-0.5">48</h3>
+                        <p class="text-sm text-slate-500 font-medium">
+                            {{ session('user_role') == 'admin' ? 'Total Transaksi' : 'Transaksi Saya' }}
+                        </p>
+                        <h3 class="text-2xl font-bold text-slate-800 mt-0.5">{{ $totalPesanan }}</h3>
                     </div>
                 </div>
 
@@ -64,7 +66,7 @@
                     </div>
                     <div>
                         <p class="text-sm text-slate-500 font-medium">Total Akun Pelanggan</p>
-                        <h3 class="text-2xl font-bold text-slate-800 mt-0.5">124</h3>
+                        <h3 class="text-2xl font-bold text-slate-800 mt-0.5">{{ $totalUser }}</h3>
                     </div>
                 </div>
             </div>

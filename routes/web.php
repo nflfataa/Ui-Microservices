@@ -15,15 +15,19 @@ Route::get('/login', function () {
 });
 
 // Halaman Internal (Dashboard Area)
-Route::get('/dashboard', [AuthController::class, 'index']);
+Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index']);
 
-Route::get('/transaksi', function () {
-    return view('transaksi');
-});
+Route::get('/transaksi', [\App\Http\Controllers\TransactionController::class, 'index']);
+Route::post('/transaksi/tambah', [\App\Http\Controllers\TransactionController::class, 'store']);
+Route::put('/transaksi/{id}/update', [\App\Http\Controllers\TransactionController::class, 'update']);
+Route::delete('/transaksi/{id}/destroy', [\App\Http\Controllers\TransactionController::class, 'destroy']);
 
 Route::get('/register', function () {
     return view('register');
 });
+
+Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'index']);
+Route::put('/profile/update', [\App\Http\Controllers\ProfileController::class, 'update']);
 
 
 // ... route halaman view sebelumnya ...
@@ -39,6 +43,7 @@ Route::post('/register', [AuthController::class, 'register'])->name('register');
 
 // Route untuk memproses form login saat disubmit
 Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // Rute untuk menangani form submission Tambah Obat
 // 1. Rute untuk Menampilkan Katalog dan Pencarian by ID (Read)
 Route::get('/obat', [ObatController::class, 'index']);

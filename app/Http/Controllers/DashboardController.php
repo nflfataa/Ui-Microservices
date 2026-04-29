@@ -9,39 +9,60 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // 1. Pastikan user sudah login (punya token)
         if (!session()->has('api_token')) {
             return redirect('/login')->withErrors(['login_error' => 'Sesi berakhir, silakan login.']);
         }
 
         $token = session('api_token');
-        $role = session('user_role');
-
-        // 2. Siapkan variabel default
-        $orders = [];
+        
+        $totalObat = 0;
         $totalPesanan = 0;
+        $totalUser = 0;
 
-        // 3. Tembak API Order Service
-        $orderApiUrl = env('ORDER_SERVICE_URL') . '/orders';
-
+        // 1. Fetch Total Obat (Product Service)
         try {
-            // Kita bawa token agar Order Service tahu siapa yang merequest
-            $response = Http::withToken($token)->get($orderApiUrl);
-
-            if ($response->successful()) {
-                // Asumsi Order Service mengembalikan data dalam format JSON standar Laravel
-                // Sesuaikan 'data' dengan struktur JSON dari OrderController@index milikmu
-                $orders = $response->json('data') ?? $response->json();
-                $totalPesanan = count($orders);
+            $productResponse = Http::withToken($token)->timeout(5)->get(env('PRODUCT_SERVICE_URL') . '/obat');
+            if ($productResponse->successful()) {
+                $json = $productResponse->json();
+                $data = $json['data'] ?? [];
+                $totalObat = is_array($data) ? count($data) : 0;
             }
         } catch (\Exception $e) {
-            // Tangani jika Order Service sedang mati (down)
-            // Bisa menggunakan session flash untuk menampilkan peringatan di UI
-            session()->flash('warning', 'Layanan pesanan sedang gangguan.');
+            session()->flash('warning_obat', 'Gagal memuat data obat.');
         }
 
-        // 4. Kirim data pesanan ke Blade
-        return view('dashboard', compact('orders', 'totalPesanan'));
+        // 2. Fetch Total Pesanan (Order Service)
+        try {
+            $userId = session('user_id');
+            $role = session('user_role');
+            
+            $url = ($role == 'admin') 
+                ? env('ORDER_SERVICE_URL') . '/orders' 
+                : env('ORDER_SERVICE_URL') . '/orders/user/' . $userId;
+
+            $orderResponse = Http::withToken($token)->timeout(5)->get($url);
+            
+            if ($orderResponse->successful()) {
+                $json = $orderResponse->json();
+                $data = $json['data'] ?? [];
+                $totalPesanan = is_array($data) ? count($data) : 0;
+            }
+        } catch (\Exception $e) {
+            session()->flash('warning_order', 'Gagal memuat data transaksi.');
+        }
+
+        // 3. Fetch Total User (User Service)
+        try {
+            $userResponse = Http::withToken($token)->timeout(5)->get('http://127.0.0.1:5000/users');
+            if ($userResponse->successful()) {
+                $json = $userResponse->json();
+                $data = $json['data'] ?? [];
+                $totalUser = is_array($data) ? count($data) : 0;
+            }
+        } catch (\Exception $e) {
+            session()->flash('warning_user', 'Gagal memuat data pengguna.');
+        }
+
+        return view('dashboard', compact('totalObat', 'totalPesanan', 'totalUser'));
     }
 }
-da

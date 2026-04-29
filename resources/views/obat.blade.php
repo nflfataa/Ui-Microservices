@@ -22,23 +22,14 @@
                         </button>
                     @endif
 
-                    {{-- LOGIC: Menghitung jumlah item di keranjang menggunakan Session --}}
-                    @php
-                        $cartCount = session('cart') ? count(session('cart')) : 0;
-                    @endphp
-
                     <a href="/transaksi"
                         class="flex-1 md:flex-none px-5 py-2.5 bg-white border border-emerald-500 text-emerald-600 rounded-xl font-semibold text-sm hover:bg-emerald-50 transition-all shadow-sm flex items-center justify-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z">
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01">
                             </path>
                         </svg>
-                        Keranjang
-                        {{-- LOGIC: Angka keranjang HANYA tampil jika lebih dari 0 --}}
-                        @if($cartCount > 0)
-                            <span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] ml-1 font-bold">{{ $cartCount }}</span>
-                        @endif
+                        Riwayat Transaksi
                     </a>
                 </div>
             </div>
@@ -58,40 +49,67 @@
                 </div>
             @endif
 
-            {{-- FORM PENCARIAN --}}
-            <form action="/obat" method="GET" class="bg-white rounded-xl shadow-sm border border-slate-200 p-2 mb-8 flex gap-2 items-center focus-within:border-emerald-500 transition-all">
+            {{-- FORM PENCARIAN (CLIENT-SIDE REALTIME) --}}
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-2 mb-8 flex gap-2 items-center focus-within:border-emerald-500 transition-all">
                 <div class="flex-1 relative flex items-center">
                     <svg class="w-5 h-5 text-slate-400 absolute left-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    <input type="number" name="search_id" value="{{ request('search_id') }}" placeholder="Cari ID obat..."
+                    <input type="text" id="realtimeSearch" onkeyup="filterObat()" placeholder="Cari nama atau kategori obat..."
                         class="w-full pl-10 pr-4 py-2 bg-transparent text-sm text-slate-800 placeholder-slate-400 outline-none">
                 </div>
-                <button type="submit" class="px-6 py-2 bg-emerald-600 text-white rounded-lg font-semibold text-sm hover:bg-emerald-700 transition-colors">
-                    Cari
-                </button>
-                @if(request('search_id'))
-                    <a href="/obat" class="px-4 py-2 text-rose-500 font-semibold text-sm hover:bg-rose-50 rounded-lg transition">Batal</a>
-                @endif
-            </form>
+                <div class="px-4 py-2 text-slate-400 font-medium text-xs border-l border-slate-100 hidden md:block">
+                    Real-time Search
+                </div>
+            </div>
+
+            <script>
+                function filterObat() {
+                    const input = document.getElementById('realtimeSearch');
+                    const filter = input.value.toLowerCase();
+                    const cards = document.getElementsByClassName('obat-card');
+                    let found = 0;
+
+                    for (let i = 0; i < cards.length; i++) {
+                        const name = cards[i].getAttribute('data-name').toLowerCase();
+                        const category = cards[i].getAttribute('data-category').toLowerCase();
+                        
+                        if (name.includes(filter) || category.includes(filter)) {
+                            cards[i].style.display = "";
+                            found++;
+                        } else {
+                            cards[i].style.display = "none";
+                        }
+                    }
+
+                    const emptyState = document.getElementById('emptySearchState');
+                    if (found === 0) {
+                        emptyState.classList.remove('hidden');
+                    } else {
+                        emptyState.classList.add('hidden');
+                    }
+                }
+            </script>
 
             {{-- GRID CARD COMPACT (LOGIC PENUH) --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5" id="obatGrid">
                 @forelse($obatList as $obat)
-                    @php 
+                    @php
                         $stock = $obat['stock'] ?? 0;
                         $isLowStock = $stock > 0 && $stock <= 5;
                         $isOutOfStock = $stock <= 0;
                     @endphp
 
-                    <div class="rounded-2xl p-5 flex flex-col relative transition-all duration-200 
-                        {{ $isLowStock ? 'bg-orange-50/30 border border-orange-200 hover:shadow-lg hover:shadow-orange-100/50' : 'bg-white border border-slate-200 hover:border-emerald-300 hover:shadow-lg hover:shadow-slate-200/50' }} 
-                        {{ $isOutOfStock ? 'opacity-60 grayscale-[30%]' : '' }}">
-                        
+                    <div class="obat-card rounded-2xl p-5 flex flex-col relative transition-all duration-200
+                        {{ $isLowStock ? 'bg-orange-50/30 border border-orange-200 hover:shadow-lg hover:shadow-orange-100/50' : 'bg-white border border-slate-200 hover:border-emerald-300 hover:shadow-lg hover:shadow-slate-200/50' }}
+                        {{ $isOutOfStock ? 'opacity-60 grayscale-[30%]' : '' }}"
+                        data-name="{{ $obat['name'] ?? '' }}"
+                        data-category="{{ $obat['category'] ?? 'Umum' }}">
+
                         <div class="flex justify-between items-center mb-3">
                             <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider {{ $isLowStock || $isOutOfStock ? 'bg-white border border-slate-200' : 'bg-slate-100' }} px-2.5 py-1 rounded-lg">
                                 {{ $obat['category'] ?? 'Umum' }}
                             </span>
 
-                            <span class="text-[11px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1.5 
+                            <span class="text-[11px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1.5
                                 {{ $isOutOfStock ? 'bg-rose-100 text-rose-600' : ($isLowStock ? 'bg-orange-100 text-orange-600' : 'bg-emerald-50 text-emerald-600') }}">
                                 @if($isLowStock && !$isOutOfStock)
                                     <span class="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
@@ -99,14 +117,14 @@
                                 Stok: {{ $stock }}
                             </span>
                         </div>
-                        
+
                         <h3 class="text-lg font-bold text-slate-900 mb-1 leading-tight">
                             {{ $obat['name'] ?? 'Produk Tanpa Nama' }}
                         </h3>
                         <p class="text-sm text-slate-500 line-clamp-2 mb-4">
                             {{ $obat['description'] ?? 'Belum ada deskripsi.' }}
                         </p>
-                        
+
                         <div class="mt-auto pt-4 border-t {{ $isLowStock ? 'border-orange-100/50' : 'border-slate-100' }} flex items-end justify-between">
                             <div>
                                 <p class="text-[10px] font-semibold uppercase tracking-wider mb-0.5 {{ $isLowStock ? 'text-orange-400' : 'text-slate-400' }}">Harga</p>
@@ -116,18 +134,15 @@
                             </div>
 
                             <div class="flex gap-1.5">
-                                
+
                                 @if(session('user_role') != 'admin')
-                                    <form action="/transaksi/tambah" method="POST" class="m-0">
-                                        @csrf
-                                        <input type="hidden" name="obat_id" value="{{ $obat['id'] ?? '' }}">
-                                        <button type="submit" class="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-colors {{ $isOutOfStock ? 'opacity-50 cursor-not-allowed' : '' }}"
-                                            title="Tambah ke Keranjang" {{ $isOutOfStock ? 'disabled' : '' }}>
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
-                                            </svg>
-                                        </button>
-                                    </form>
+                                    <button type="button" data-obat="{{ json_encode($obat) }}" onclick="openBeliModal(this)"
+                                        class="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-colors {{ $isOutOfStock ? 'opacity-50 cursor-not-allowed' : '' }}"
+                                        title="Beli Sekarang" {{ $isOutOfStock ? 'disabled' : '' }}>
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                        </svg>
+                                    </button>
                                 @endif
 
                                 @if(session('user_role') == 'admin')
@@ -158,9 +173,79 @@
                         <p class="text-slate-500 text-sm mt-1 text-center">Pastikan ID obat benar atau tambahkan data baru.</p>
                     </div>
                 @endforelse
+
+                {{-- Empty State for Real-time Search --}}
+                <div id="emptySearchState" class="hidden col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-4 flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-slate-200 border-dashed">
+                    <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 mb-4">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800">Hasil tidak ditemukan</h3>
+                    <p class="text-slate-500 text-sm mt-1 text-center">Coba cari dengan kata kunci nama atau kategori lain.</p>
+                </div>
             </div>
         </div>
     </div>
+
+    {{-- MODAL AREA --}}
+    @if(session('user_role') != 'admin')
+        {{-- MODAL: BELI OBAT --}}
+        <div id="modalBeliObat" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm transition-opacity p-4">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all border border-slate-100">
+                <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-emerald-50/50">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900">Pesan Obat</h3>
+                        <p id="beli_nama_obat" class="text-xs text-emerald-600 font-semibold"></p>
+                    </div>
+                    <button onclick="document.getElementById('modalBeliObat').classList.add('hidden')" class="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+
+                <form action="/transaksi/tambah" method="POST" class="p-6">
+                    @csrf
+                    <input type="hidden" id="beli_id_obat" name="obat_id">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1.5">Jumlah Pesanan</label>
+                            <div class="flex items-center gap-3">
+                                <button type="button" onclick="adjustQty(-1)" class="w-10 h-10 rounded-lg border border-slate-200 flex items-center justify-center hover:bg-slate-50 font-bold">-</button>
+                                <input type="number" id="beli_qty" name="quantity" value="1" min="1" required
+                                    class="flex-1 text-center px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-emerald-500 text-lg font-bold outline-none transition-all">
+                                <button type="button" onclick="adjustQty(1)" class="w-10 h-10 rounded-lg border border-slate-200 flex items-center justify-center hover:bg-slate-50 font-bold">+</button>
+                            </div>
+                            <p id="beli_info_stok" class="text-[10px] text-slate-400 mt-2 text-center uppercase tracking-wider font-bold"></p>
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-100 flex gap-3">
+                        <button type="button" onclick="document.getElementById('modalBeliObat').classList.add('hidden')" class="px-5 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition">Batal</button>
+                        <button type="submit" class="flex-1 py-2.5 text-sm font-semibold text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 transition shadow-lg shadow-emerald-200/50 flex items-center justify-center gap-2">
+                            Konfirmasi Pesanan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            function openBeliModal(button) {
+                const obat = JSON.parse(button.getAttribute('data-obat'));
+                document.getElementById('beli_id_obat').value = obat.id;
+                document.getElementById('beli_nama_obat').innerText = obat.name;
+                document.getElementById('beli_info_stok').innerText = 'Stok Tersedia: ' + obat.stock;
+                document.getElementById('beli_qty').value = 1;
+                document.getElementById('beli_qty').max = obat.stock;
+                document.getElementById('modalBeliObat').classList.remove('hidden');
+            }
+
+            function adjustQty(amount) {
+                const input = document.getElementById('beli_qty');
+                let val = parseInt(input.value) + amount;
+                if (val < 1) val = 1;
+                if (val > parseInt(input.max)) val = input.max;
+                input.value = val;
+            }
+        </script>
+    @endif
 
     {{-- MODAL AREA ADMIN --}}
     @if(session('user_role') == 'admin')
