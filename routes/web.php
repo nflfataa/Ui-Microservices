@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ObatController;
 
 // Halaman Publik
 Route::get('/', function () {
@@ -15,10 +16,6 @@ Route::get('/login', function () {
 
 // Halaman Internal (Dashboard Area)
 Route::get('/dashboard', [AuthController::class, 'index']);
-
-Route::get('/obat', function () {
-    return view('obat');
-});
 
 Route::get('/transaksi', function () {
     return view('transaksi');
@@ -42,3 +39,15 @@ Route::post('/register', [AuthController::class, 'register'])->name('register');
 
 // Route untuk memproses form login saat disubmit
 Route::post('/login', [AuthController::class, 'login'])->name('login');
+// Rute untuk menangani form submission Tambah Obat
+// 1. Rute untuk Menampilkan Katalog dan Pencarian by ID (Read)
+Route::get('/obat', [ObatController::class, 'index']);
+
+// 2. Rute untuk Memproses Form Tambah Obat (Create)
+Route::post('/obat/store', [ObatController::class, 'store']);
+
+// 3. Rute untuk Memproses Form Edit Obat (Update)
+Route::put('/obat/{id}/update', [ObatController::class, 'update']);
+
+// 4. Rute untuk Memproses Tombol Hapus Obat (Delete)
+Route::delete('/obat/{id}/destroy', [ObatController::class, 'destroy']);
